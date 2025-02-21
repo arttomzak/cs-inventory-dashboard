@@ -2,6 +2,13 @@
 import './App.css'
 import steamButton from './assets/sits_01.png';
 
+// this is my inventory's json output from steam API (note: will need user's steamid )
+// https://steamcommunity.com/inventory/76561198194854574/730/2?l=english&count=5000
+
+// tradable: data determining whether we will be adding its price data to our overall price 
+// market_name: seems to be already formatted for if we wanna just go off the median price found based off of the steam community site 
+
+
 function App() {
 
   return (

@@ -1,0 +1,19 @@
+import { useState, useEffect } from "react";
+import import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+  } from "recharts";
+
+
+
+
+const InvChart = () => ({ inv_total_val })
+    const newData ={
+        date: new
+    }
+}

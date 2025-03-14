@@ -1,27 +1,28 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import steamButton from "./assets/sits_01.png";
+// import steamButton from "./assets/sits_01.png";
+import SteamLoginButton from "./steambutton";
 import {
   LineChart,
   Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  // XAxis,
+  // YAxis,
+  // Tooltip,
+  // Legend,
+  // ResponsiveContainer,
 } from "recharts";
 
-// intializing some variables making up our url
-const base_url = `https://www.steamwebapi.com/steam/api/inventory`;
-const steam_id = `76561198194854574`;
-const game = `cs2`;
-
-// our built up endpoint url
-const INVENTORY_REQUEST_URL = `${base_url}?steam_id=${steam_id}&game=${game}&key=${
-  import.meta.env.VITE_STEAMAPI_API_KEY
-}`;
-
 function App() {
+  // intializing some variables making up our url
+  const base_url = `https://www.steamwebapi.com/steam/api/inventory`;
+  const steam_id = `76561198194854574`;
+  const game = `cs2`;
+
+  // our built up endpoint url
+  const INVENTORY_REQUEST_URL = `${base_url}?steam_id=${steam_id}&game=${game}&key=${
+    import.meta.env.VITE_STEAMAPI_API_KEY
+  }`;
+
   const [items, setItems] = useState([]); // creating an empty array named items, with a setter function setItems
 
   useEffect(() => {
@@ -51,50 +52,7 @@ function App() {
   useEffect(() => {});
   // TODO: sort out the type problems that are coming up with the item attributes
 
-  const pucio = [
-    {
-      name: "Page A",
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
-    },
-    {
-      name: "Page B",
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
-    },
-    {
-      name: "Page C",
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-    {
-      name: "Page D",
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
-    },
-    {
-      name: "Page E",
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: "Page F",
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
-    },
-    {
-      name: "Page G",
-      uv: 3490,
-      pv: 4300,
-      amt: 2100,
-    },
-  ];
+    
 
   return (
     <>
@@ -103,9 +61,7 @@ function App() {
           <h1 className="absolute left-1/2 transform -translate-x-1/2">
             CS2 Inventory Dashboard
           </h1>
-          <button className="hover:opacity-90 absolute right-5">
-            <img src={steamButton} />
-          </button>
+          <SteamLoginButton loggedin={steam_id} />
         </nav>
 
         <div className="mt-10">
@@ -114,17 +70,23 @@ function App() {
               <div className="bg-slate-950 outline-1 outline-offset-5 outline-gray-600 mx-10">
                 <ul>
                   <li>
-                    {/* some kind of a if mousehover on the chart, change the value displayed to the $ value on the chart like RH */}
+                    {/* some kind of a if mousehover on the chart, change the value displayed to the $ value on the chart like RH  WITH A USESTATE sethovered*/}
                     <h1 className="text-white ml-4 text-5xl text-bold">
-                      ${inv_total_val}
+                      ${inv_total_val} 
                     </h1>
-                    <h1 className="text-emerald-400 ml-4 text-3xl text-bold">
+                    {/* I want this to end up being like how much has the price increased or decreased since last login */}
+                    <h1 className="text-emerald-400 ml-4 text-3xl text-bold"> 
                       +$123 (0.27%)
                     </h1>
                   </li>
 
                   <li>
-                    <LineChart width={1000} height={600} data={pucio} className="mt-10">
+                    <LineChart
+                      width={1000}
+                      height={600}
+                      // data={pucio}
+                      className="mt-10"
+                    >
                       <Line
                         type="monotone"
                         dataKey="pv"
@@ -140,7 +102,7 @@ function App() {
             <li className="basis-3/10">
               {/* TODO: make the items box stay up top and the items scrollable */}
               <div className=" outline-gray-600 outline-1 outline-offset-5 bg-gray-950 mx-10">
-                <h2 className=" outline-1 outline-gray-600 outline-offset-5 text-white">
+                <h2 className=" outline-1 outline-gray-600 outline-offset-5 text-center text-bold text-white">
                   Items
                 </h2>
                 <div className="overflow-y-auto scroll-smooth h-[80vh] mb-5 mt-2 ">

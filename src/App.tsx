@@ -5,12 +5,14 @@ import SteamLoginButton from "./steambutton";
 import {
   LineChart,
   Line,
-  // XAxis,
-  // YAxis,
-  // Tooltip,
-  // Legend,
-  // ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
+import { supabase } from "./config/supabaseClient";
+import { FetchHistoricalInvData } from "./FetchHistoricalInvData"
 
 function App() {
   // intializing some variables making up our url
@@ -32,7 +34,9 @@ function App() {
       const data = await response.json();
       setItems(data); // call setter function for items
     };
+
     getData(); // runs our defined getData function within the useEffect hook
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // items.map(item => item.priceavg) in the dependency array leads to nonstop GET requests and we don't want that, so we will stick with only rendering the price once on render
   // NOTE: DEPENDENCY ARRAY WILL EVENTUALLY BE THE STEAMUSERID entered/stored from the website's steam login, because we might wanna switch in between users
 
@@ -49,10 +53,48 @@ function App() {
 
   console.log(inv_total_val);
 
-  useEffect(() => {});
-  // TODO: sort out the type problems that are coming up with the item attributes
+  useEffect(() => {
+    if (inv_total_val > 0) {
+      // haven't understood why this happens but with inv_total_value dependency array, it triple inserts data, this is a bandaid solution tho
+      const AddDatapoint = async () => {
+        const { newdatapoint, error } = await supabase
+          .from("inventory_history")
+          .insert([
+            {
+              // note: no need for timestamp bc supabase auto gens one, hopefully it works with recharts
+              steam_id: steam_id,
+              total_inv_val: inv_total_val,
+            },
+          ])
+          .select() // this is what we are gonna use to select specific columns to fill out our data const array that we are gonna feed into our chart
+          .single(); // this ensures that a single row is returned, rather than an array, WHICH WE NEED as I'm making
 
-    
+        if (error) {
+          console.error("Datapoint not inserted! Peep error:", error);
+          return null;
+        } else {
+          console.log("Good job, data inserted!", newdatapoint);
+        }
+      };
+      AddDatapoint();
+    }
+  }, [inv_total_val]);
+
+
+  const [InvData, setInvData] = useState([]);
+
+  useEffect(() => {
+      const fetchData = async () => {
+          const { data, error } = await supabase
+              .from("inventory_history")
+              .select("total_inv_val, timestamp");
+          console.log("Fetched Data:", data);
+          setInvData(data);
+          console.log("Stored fetched data:", InvData)
+      };
+      fetchData()
+  }, []);
+  
 
   return (
     <>
@@ -64,7 +106,8 @@ function App() {
           <SteamLoginButton loggedin={steam_id} />
         </nav>
 
-        <div className="mt-10">
+        <div className="mt-10 flex">
+          {/* CHART CONTAINER  */}
           <ul className="flex items-start">
             <li className="basis-7/10">
               <div className="bg-slate-950 outline-1 outline-offset-5 outline-gray-600 mx-10">
@@ -72,10 +115,10 @@ function App() {
                   <li>
                     {/* some kind of a if mousehover on the chart, change the value displayed to the $ value on the chart like RH  WITH A USESTATE sethovered*/}
                     <h1 className="text-white ml-4 text-5xl text-bold">
-                      ${inv_total_val} 
+                      ${inv_total_val}
                     </h1>
-                    {/* I want this to end up being like how much has the price increased or decreased since last login */}
-                    <h1 className="text-emerald-400 ml-4 text-3xl text-bold"> 
+                    {/* I want this to end up being like how much has the price increased or decreased since last login , find delta since last fetched val*/}
+                    <h1 className="text-emerald-400 ml-4 text-3xl text-bold">
                       +$123 (0.27%)
                     </h1>
                   </li>

@@ -2,17 +2,9 @@ import { useState, useEffect } from "react";
 import "./App.css";
 // import steamButton from "./assets/sits_01.png";
 import SteamLoginButton from "./steambutton";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { supabase } from "./config/supabaseClient";
-import { FetchHistoricalInvData } from "./FetchHistoricalInvData"
+import { format } from "date-fns";
 
 function App() {
   // intializing some variables making up our url
@@ -81,20 +73,28 @@ function App() {
   }, [inv_total_val]);
 
 
-  const [InvData, setInvData] = useState([]);
-
+  const [InvData, setInvData] = useState<{ inv_total_val: number; timestamp: string }[]>([]); // expected formatting of InvData, making sure that we can just pass InvData as the data prop of the line chart later
   useEffect(() => {
       const fetchData = async () => {
           const { data, error } = await supabase
               .from("inventory_history")
               .select("total_inv_val, timestamp");
           console.log("Fetched Data:", data);
-          setInvData(data);
-          console.log("Stored fetched data:", InvData)
+
+          const formattedData = data.map(item => ({
+            inv_total_val: item.total_inv_val,
+            timestamp: format(new Date(item.timestamp), "MM/dd/yyyy HH:mm"),
+          }));
+
+          setInvData(formattedData);
       };
       fetchData()
+
   }, []);
-  
+
+  useEffect(() => { // console log the stored InvData, AFTER it's updated 
+    console.log("Stored fetched data:", InvData)
+  }, [InvData]);
 
   return (
     <>
@@ -106,42 +106,59 @@ function App() {
           <SteamLoginButton loggedin={steam_id} />
         </nav>
 
-        <div className="mt-10 flex">
-          {/* CHART CONTAINER  */}
+        <div className="mt-10">
+
           <ul className="flex items-start">
+
+          {/* CHART CONTAINER  */}
             <li className="basis-7/10">
-              <div className="bg-slate-950 outline-1 outline-offset-5 outline-gray-600 mx-10">
+              <div className="bg-slate-950 outline-1 outline-offset-5 p-4 outline-gray-600 mx-10">
                 <ul>
                   <li>
                     {/* some kind of a if mousehover on the chart, change the value displayed to the $ value on the chart like RH  WITH A USESTATE sethovered*/}
-                    <h1 className="text-white ml-4 text-5xl text-bold">
+                    <h1 className="text-white text-5xl text-bold">
                       ${inv_total_val}
                     </h1>
                     {/* I want this to end up being like how much has the price increased or decreased since last login , find delta since last fetched val*/}
-                    <h1 className="text-emerald-400 ml-4 text-3xl text-bold">
-                      +$123 (0.27%)
+                    <h1 className="text-emerald-400 text-3xl text-bold">
+                      +$123 (12.27%)
                     </h1>
                   </li>
+                  
 
                   <li>
-                    <LineChart
-                      width={1000}
-                      height={600}
-                      // data={pucio}
-                      className="mt-10"
-                    >
-                      <Line
-                        type="monotone"
-                        dataKey="pv"
-                        stroke="#8884d8"
-                        strokeWidth={2}
-                      />
-                    </LineChart>
+                    <div className="h-[65vh]">
+                      <ResponsiveContainer width="100%" height="100%">
+
+                        <LineChart
+                          data={InvData}
+                          className="mt-10"
+                          width={500}
+                          height={300}
+                        >
+                          <YAxis domain={["auto", "auto"]}></YAxis>
+                          <XAxis dataKey="timestamp" domain={["auto", "auto"]}></XAxis>
+                          <Line
+                            type="monotone"
+                            dataKey="inv_total_val"
+                            stroke="#00d492"
+                            strokeWidth={2}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
                   </li>
+
+
+
                 </ul>
               </div>
             </li>
 
+
+
+          {/* ITEMS BOX STARTS */}
             <li className="basis-3/10">
               {/* TODO: make the items box stay up top and the items scrollable */}
               <div className=" outline-gray-600 outline-1 outline-offset-5 bg-gray-950 mx-10">
